@@ -1,40 +1,27 @@
+import json
+
 from flask import Flask
 from flask.json import jsonify
 
-
-app = Flask(__name__)  # define main file Flask("main.py")
-
-
-dict_primjer = {
-    "Ime": "Marko",
-    "Prezime": "Markic",
-    "Email": "marko@mail.com",
-}
+from dataset import get_country_data
 
 
-# set default route
-@app.route("/")
-def home():
-    return "<h1><a href='/about'>Hello World</a></h1>"
+app = Flask(__name__)  # Flask("main.py")
 
 
-@app.route("/about")
-def about_page():
-    return "<p>About page</p>"
+@app.route("/api")
+def country_data():
+    data_df = get_country_data()
+    data_dict = json.loads(data_df.to_json())
+    return jsonify(data_dict)
 
 
-# links such as localhost/user/Marko will work
-@app.route("/user/<username>")
-def user(username):
-    return f"<h3>User page for {username}</hr>"
+@app.route("/api/<country>")
+def country_specific_data(country):
+    data_df = get_country_data()
+    data_dict = json.loads(data_df.to_json())
 
+    country_dict = data_dict.get(country.lower(), {})
 
-# If you want get json 'dict_primjer' just execute route localhost/json
-@app.route("/json")
-def json():
-    return jsonify(dict_primjer)
+    return jsonify(country_dict)
 
-
-@app.route("/json/<key>")
-def json_value(key):
-    return dict_primjer.get(key, "Unknovn key")
